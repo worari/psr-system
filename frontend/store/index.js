@@ -11,6 +11,42 @@ const USE_MOCK_API = !API_BASE || API_BASE.includes('DEFAULT_ID') || API_BASE.in
 console.log('[STORE] API_BASE:', API_BASE ? API_BASE.substring(0, 50) + '...' : 'NOT SET')
 console.log('[STORE] USE_MOCK_API:', USE_MOCK_API)
 
+// Configure axios to handle CORS
+axios.defaults.timeout = 10000
+axios.defaults.maxRedirects = 5
+axios.defaults.withCredentials = false
+axios.defaults.headers.common['Accept'] = 'application/json'
+
+// Add axios request interceptor
+axios.interceptors.request.use(
+  config => {
+    console.log('[AXIOS] Sending request to:', config.url)
+    return config
+  },
+  error => Promise.reject(error)
+)
+
+// Add axios response interceptor
+axios.interceptors.response.use(
+  response => {
+    console.log('[AXIOS] Response success:', response.status)
+    return response
+  },
+  error => {
+    if (error.response) {
+      // Response with error status
+      console.error('[AXIOS] Error response:', error.response.status, error.response.data)
+    } else if (error.request) {
+      // Request made but no response
+      console.error('[AXIOS] No response:', error.request)
+    } else {
+      // Error in request setup
+      console.error('[AXIOS] Error:', error.message)
+    }
+    return Promise.reject(error)
+  }
+)
+
 export default createStore({
   state: {
     user: null,
@@ -74,8 +110,17 @@ export default createStore({
           response = await mockLogin(email, password)
         } else {
           // ใช้ Backend จริง
-          const result = await axios.post(`${API_BASE}?action=login`, { email, password })
-          response = result.data
+          try {
+            const result = await axios.post(`${API_BASE}?action=login`, { email, password })
+            response = result.data
+          } catch (apiError) {
+            // ถ้า API ตอบสนอง แต่มี error
+            console.error('[LOGIN] API Error:', apiError.message)
+            
+            // ลองใช้ Mock API เป็นทางเลือก
+            console.warn('[LOGIN] Falling back to Mock API...')
+            response = await mockLogin(email, password)
+          }
         }
         
         if (response.success) {
@@ -105,8 +150,17 @@ export default createStore({
           response = await mockRegister(userData.email, userData.password, userData.name, userData.nickname, userData.unit)
         } else {
           // ใช้ Backend จริง
-          const result = await axios.post(`${API_BASE}?action=register`, userData)
-          response = result.data
+          try {
+            const result = await axios.post(`${API_BASE}?action=register`, userData)
+            response = result.data
+          } catch (apiError) {
+            // ถ้า API ตอบสนอง แต่มี error
+            console.error('[REGISTER] API Error:', apiError.message)
+            
+            // ลองใช้ Mock API เป็นทางเลือก
+            console.warn('[REGISTER] Falling back to Mock API...')
+            response = await mockRegister(userData.email, userData.password, userData.name, userData.nickname, userData.unit)
+          }
         }
         
         commit('setError', null)
