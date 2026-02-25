@@ -4,8 +4,12 @@ import { mockRegister, mockLogin, mockGetMasterData, mockCreateRequest, mockGetR
 
 const API_BASE = import.meta.env.VITE_GAS_DEPLOYMENT_ID
 
-// ตรวจสอบว่า backend พร้อมหรือใช้ mock
-const USE_MOCK_API = !API_BASE || API_BASE.includes('DEFAULT_ID') || API_BASE.includes('PASTE_YOUR')
+// ใช้ Backend จริง เว้นแต่ค่า placeholder
+const USE_MOCK_API = !API_BASE || API_BASE.includes('DEFAULT_ID') || API_BASE.includes('PASTE_YOUR') || API_BASE.includes('macros/d/')
+
+// Debug: ตรวจสอบว่าใช้ API ไหน
+console.log('[STORE] API_BASE:', API_BASE ? API_BASE.substring(0, 50) + '...' : 'NOT SET')
+console.log('[STORE] USE_MOCK_API:', USE_MOCK_API)
 
 export default createStore({
   state: {

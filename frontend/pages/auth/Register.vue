@@ -129,7 +129,8 @@ export default {
       success: null,
       useMockApi: !import.meta.env.VITE_GAS_DEPLOYMENT_ID || 
                    import.meta.env.VITE_GAS_DEPLOYMENT_ID.includes('DEFAULT_ID') ||
-                   import.meta.env.VITE_GAS_DEPLOYMENT_ID.includes('PASTE_YOUR'),
+                   import.meta.env.VITE_GAS_DEPLOYMENT_ID.includes('PASTE_YOUR') ||
+                   import.meta.env.VITE_GAS_DEPLOYMENT_ID.includes('macros/d/'),
       mockUsers: [
         { email: 'admin@test.com', password: 'admin123', role: 'Admin' },
         { email: 'user@test.com', password: 'user1234', role: 'User' }
