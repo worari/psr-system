@@ -1,9 +1,8 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import path from 'path'
 
 export default defineConfig({
-  root: path.resolve(__dirname, 'frontend'),
+  root: './frontend',
   plugins: [vue()],
   server: {
     port: 3000,
@@ -12,6 +11,6 @@ export default defineConfig({
   build: {
     target: 'esnext',
     minify: 'terser',
-    outDir: '../dist'
+    outDir: 'dist'
   }
 })
