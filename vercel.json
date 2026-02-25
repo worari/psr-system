@@ -1,0 +1,11 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "npm": {
+    "detectPackageManager": true
+  },
+  "env": {
+    "VITE_GAS_DEPLOYMENT_ID": "https://script.google.com/macros/s/AKfycbxCoU8r3836eOfJb3sXgPlERtHp1iLBdzCAJ2rMB1WMHiHekyJlzQaEySdicRweebfd2A/exec",
+    "VITE_GOOGLE_SHEET_ID": "1UWqcy8I1tFWSbGiLNhtD48DGTafyRBgb8M7iv9QaaNw"
+  }
+}

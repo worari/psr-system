@@ -1,0 +1,36 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for unused dependencies
+        run: npx depcheck --ignores axios,vue-router,vuex 2>/dev/null || true
+
+      - name: Verify build
+        run: npm run build
+
+      - name: Check for console.log and debugger statements
+        run: |
+          if grep -r "console\.log\|debugger" frontend/pages frontend/components --include="*.vue" --include="*.js"; then
+            echo "Found console.log or debugger statements!"
+            exit 1
+          fi
