@@ -1,6 +1,17 @@
 <template>
   <div class="login-container">
     <div class="login-box">
+      <div v-if="useMockApi" class="mock-api-banner">
+        ⚠️ <strong>ใช้ Mock API (ทดสอบ)</strong><br>
+        Backend ยังไม่ได้การ connect ใช้ข้อมูลจำลองสำหรับทดสอบแทน
+      </div>
+
+      <div v-if="mockUsers" class="mock-users-info">
+        <strong>🔐 Test Accounts:</strong>
+        <div>✉️ admin@test.com / 🔑 admin123 (Admin)</div>
+        <div>✉️ user@test.com / 🔑 user1234 (User)</div>
+      </div>
+
       <h1>เข้าสู่ระบบ</h1>
       <p class="subtitle">ระบบเสนอขอบำเหน็จความชอบ (พ.ส.ร.)</p>
 
@@ -58,7 +69,14 @@ export default {
         email: '',
         password: ''
       },
-      error: null
+      error: null,
+      useMockApi: !import.meta.env.VITE_GAS_DEPLOYMENT_ID || 
+                   import.meta.env.VITE_GAS_DEPLOYMENT_ID.includes('DEFAULT_ID') ||
+                   import.meta.env.VITE_GAS_DEPLOYMENT_ID.includes('PASTE_YOUR'),
+      mockUsers: [
+        { email: 'admin@test.com', password: 'admin123', role: 'Admin' },
+        { email: 'user@test.com', password: 'user1234', role: 'User' }
+      ]
     }
   },
   computed: {
@@ -124,6 +142,33 @@ label {
   margin-bottom: 0.5rem;
   color: #333;
   font-weight: 500;
+}
+
+.mock-api-banner {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.mock-users-info {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: #e7f3ff;
+  color: #0066cc;
+  border: 1px solid #b3d9ff;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.mock-users-info div {
+  margin: 0.3rem 0;
+  font-family: 'Courier New', monospace;
 }
 
 .form-input {

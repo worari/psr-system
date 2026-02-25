@@ -1,7 +1,11 @@
 import { createStore } from 'vuex'
 import axios from 'axios'
+import { mockRegister, mockLogin, mockGetMasterData, mockCreateRequest, mockGetRequests } from '../services/mockApi'
 
 const API_BASE = import.meta.env.VITE_GAS_DEPLOYMENT_ID
+
+// ตรวจสอบว่า backend พร้อมหรือใช้ mock
+const USE_MOCK_API = !API_BASE || API_BASE.includes('DEFAULT_ID') || API_BASE.includes('PASTE_YOUR')
 
 export default createStore({
   state: {
@@ -59,17 +63,28 @@ export default createStore({
     async login({ commit }, { email, password }) {
       commit('setLoading', true)
       try {
-        const response = await axios.post(`${API_BASE}?action=login`, { email, password })
-        if (response.data.success) {
-          commit('setUser', response.data.user)
-          commit('setError', null)
-          return response.data
+        let response
+        
+        if (USE_MOCK_API) {
+          // ใช้ Mock API สำหรับทดสอบ
+          response = await mockLogin(email, password)
         } else {
-          commit('setError', response.data.message)
-          return response.data
+          // ใช้ Backend จริง
+          const result = await axios.post(`${API_BASE}?action=login`, { email, password })
+          response = result.data
+        }
+        
+        if (response.success) {
+          commit('setUser', response.user)
+          commit('setError', null)
+          return response
+        } else {
+          commit('setError', response.message)
+          return response
         }
       } catch (error) {
-        commit('setError', error.message)
+        const errorMessage = error.response?.data?.message || error.message || 'ไม่สามารถเชื่อมต่อ backend'
+        commit('setError', errorMessage)
         throw error
       } finally {
         commit('setLoading', false)
@@ -79,11 +94,22 @@ export default createStore({
     async register({ commit }, userData) {
       commit('setLoading', true)
       try {
-        const response = await axios.post(`${API_BASE}?action=register`, userData)
+        let response
+        
+        if (USE_MOCK_API) {
+          // ใช้ Mock API สำหรับทดสอบ
+          response = await mockRegister(userData.email, userData.password, userData.name, userData.nickname, userData.unit)
+        } else {
+          // ใช้ Backend จริง
+          const result = await axios.post(`${API_BASE}?action=register`, userData)
+          response = result.data
+        }
+        
         commit('setError', null)
-        return response.data
+        return response
       } catch (error) {
-        commit('setError', error.message)
+        const errorMessage = error.response?.data?.message || error.message || 'ไม่สามารถเชื่อมต่อ backend'
+        commit('setError', errorMessage)
         throw error
       } finally {
         commit('setLoading', false)
@@ -121,12 +147,23 @@ export default createStore({
     async getMasterData({ commit }) {
       commit('setLoading', true)
       try {
-        const response = await axios.post(`${API_BASE}?action=getMasterData`)
-        commit('setMasterData', response.data)
+        let response
+        
+        if (USE_MOCK_API) {
+          // ใช้ Mock API สำหรับทดสอบ
+          response = await mockGetMasterData()
+        } else {
+          // ใช้ Backend จริง
+          const result = await axios.post(`${API_BASE}?action=getMasterData`)
+          response = result.data
+        }
+        
+        commit('setMasterData', response)
         commit('setError', null)
-        return response.data
+        return response
       } catch (error) {
-        commit('setError', error.message)
+        const errorMessage = error.response?.data?.message || error.message || 'ไม่สามารถเชื่อมต่อ backend'
+        commit('setError', errorMessage)
         throw error
       } finally {
         commit('setLoading', false)
