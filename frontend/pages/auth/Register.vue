@@ -148,7 +148,12 @@ export default {
           this.error = response.message
         }
       } catch (error) {
-        this.error = 'เกิดข้อผิดพลาด กรุณาลองใหม่'
+        // Check if it's a network error (backend not connected)
+        if (error.message.includes('Network') || error.code === 'ERR_NETWORK') {
+          this.error = '⚠️ Backend ยังไม่ได้เชื่อมต่อ\n\nกรุณาตั้งค่า Google Apps Script:\n1. ตั้ง VITE_GAS_DEPLOYMENT_ID ใน .env.local\n2. Deploy Google Apps Script โดยเข้าไป https://script.google.com'
+        } else {
+          this.error = 'เกิดข้อผิดพลาด: ' + error.message
+        }
       }
     }
   }
