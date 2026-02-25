@@ -4,8 +4,8 @@ import { mockRegister, mockLogin, mockGetMasterData, mockCreateRequest, mockGetR
 
 const API_BASE = import.meta.env.VITE_GAS_DEPLOYMENT_ID
 
-// ใช้ Backend จริง เว้นแต่ค่า placeholder
-const USE_MOCK_API = !API_BASE || API_BASE.includes('DEFAULT_ID') || API_BASE.includes('PASTE_YOUR') || API_BASE.includes('macros/d/')
+// Disable mock fallback: force using real backend so errors surface
+const USE_MOCK_API = false
 
 // Debug: ตรวจสอบว่าใช้ API ไหน
 console.log('[STORE] API_BASE:', API_BASE ? API_BASE.substring(0, 50) + '...' : 'NOT SET')
@@ -103,26 +103,9 @@ export default createStore({
     async login({ commit }, { email, password }) {
       commit('setLoading', true)
       try {
-        let response
-        
-        if (USE_MOCK_API) {
-          // ใช้ Mock API สำหรับทดสอบ
-          response = await mockLogin(email, password)
-        } else {
-          // ใช้ Backend จริง
-          try {
-            const result = await axios.post(`${API_BASE}?action=login`, { email, password })
-            response = result.data
-          } catch (apiError) {
-            // ถ้า API ตอบสนอง แต่มี error
-            console.error('[LOGIN] API Error:', apiError.message)
-            
-            // ลองใช้ Mock API เป็นทางเลือก
-            console.warn('[LOGIN] Falling back to Mock API...')
-            response = await mockLogin(email, password)
-          }
-        }
-        
+        // Force calling real backend and surface errors
+        const result = await axios.post(`${API_BASE}?action=login`, { email, password })
+        const response = result.data
         if (response.success) {
           commit('setUser', response.user)
           commit('setError', null)
@@ -143,26 +126,9 @@ export default createStore({
     async register({ commit }, userData) {
       commit('setLoading', true)
       try {
-        let response
-        
-        if (USE_MOCK_API) {
-          // ใช้ Mock API สำหรับทดสอบ
-          response = await mockRegister(userData.email, userData.password, userData.name, userData.nickname, userData.unit)
-        } else {
-          // ใช้ Backend จริง
-          try {
-            const result = await axios.post(`${API_BASE}?action=register`, userData)
-            response = result.data
-          } catch (apiError) {
-            // ถ้า API ตอบสนอง แต่มี error
-            console.error('[REGISTER] API Error:', apiError.message)
-            
-            // ลองใช้ Mock API เป็นทางเลือก
-            console.warn('[REGISTER] Falling back to Mock API...')
-            response = await mockRegister(userData.email, userData.password, userData.name, userData.nickname, userData.unit)
-          }
-        }
-        
+        // Force calling real backend and surface errors
+        const result = await axios.post(`${API_BASE}?action=register`, userData)
+        const response = result.data
         commit('setError', null)
         return response
       } catch (error) {

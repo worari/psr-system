@@ -532,7 +532,24 @@ function doPost(e) {
 }
 
 function sendResponse(data) {
-  return ContentService
+  var output = ContentService
     .createTextOutput(JSON.stringify(data))
     .setMimeType(ContentService.MimeType.JSON);
+
+  // Add CORS headers so browser clients can call this webapp
+  try {
+    // Some environments support addHeader on TextOutput
+    output.addHeader('Access-Control-Allow-Origin', '*');
+    output.addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    output.addHeader('Access-Control-Allow-Headers', 'Content-Type');
+  } catch (e) {
+    // ignore if not supported in the execution environment
+  }
+
+  return output;
+}
+
+// Simple GET handler to help with browser checks (and some preflight behaviours)
+function doGet(e) {
+  return sendResponse({ success: false, message: 'Use POST with action parameter' });
 }
