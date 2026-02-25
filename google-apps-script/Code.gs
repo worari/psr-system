@@ -485,14 +485,52 @@ function getMasterData() {
 
 // ==================== WEB APP ENTRY POINT ====================
 
-function doGet(e) {
-  return HtmlService.createHtmlOutput('PSR System Backend Running');
+/**
+ * Robustly parse incoming payloads: prefer raw JSON body, fall back to
+ * form-encoded parameters or a `payload` parameter containing JSON.
+ */
+function _parsePayload(e) {
+  try {
+    if (e && e.postData && e.postData.contents) {
+      var raw = e.postData.contents;
+      try {
+        return JSON.parse(raw);
+      } catch (err) {
+        // Not JSON — try reading parameters instead
+        if (e.parameter && Object.keys(e.parameter).length) {
+          var params = JSON.parse(JSON.stringify(e.parameter));
+          // If a 'payload' param exists and is JSON, parse it
+          if (params.payload) {
+            try { return JSON.parse(params.payload); } catch(e2) { /* ignore */ }
+          }
+          delete params.action;
+          return params;
+        }
+      }
+    }
+  } catch (err) {
+    // ignore and fallback
+  }
+
+  // Final fallback: try parameter.payload or empty object
+  try {
+    if (e && e.parameter && e.parameter.payload) {
+      return JSON.parse(e.parameter.payload);
+    }
+  } catch (err) {
+    // ignore
+  }
+
+  return {};
 }
 
 function doPost(e) {
-  const action = e.parameter.action;
-  const payload = JSON.parse(e.postData.contents);
-  
+  var action = (e && e.parameter && e.parameter.action) || null;
+  var payload = _parsePayload(e) || {};
+
+  // Allow action to be supplied in the JSON body as a fallback
+  action = action || payload.action;
+
   try {
     switch(action) {
       case 'register':
@@ -538,7 +576,6 @@ function sendResponse(data) {
 
   // Add CORS headers so browser clients can call this webapp
   try {
-    // Some environments support addHeader on TextOutput
     output.addHeader('Access-Control-Allow-Origin', '*');
     output.addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     output.addHeader('Access-Control-Allow-Headers', 'Content-Type');
